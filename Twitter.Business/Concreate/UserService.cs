@@ -1,12 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Twitter.Business.Abstractions;
 using Twitter.Business.Dtos.Post;
 using Twitter.Business.Dtos.User;
@@ -62,14 +56,14 @@ namespace Twitter.Business.Concreate
             return _mapper.Map<UserDto>(user);
         }
 
-        public async Task<UserDto> UpdateAsync(UserUpdateDto dto)
+        public async Task<UserDto> UpdateAsync(int id,UserUpdateDto dto)
         {
-            if (await UserEmailExists(dto.Email) || await UserUserNameExists(dto.UserName))
-            {
-                throw new Exception("Entered mail or username already registered!");
-            }
 
-            var user = _mapper.Map<User>(dto);
+
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+                throw new Exception("User not found");
+            _mapper.Map(dto, user);
             await _userManager.UpdateAsync(user);
             return _mapper.Map<UserDto>(user);
         }
@@ -93,14 +87,21 @@ namespace Twitter.Business.Concreate
             return await _userManager.Users.AnyAsync(u => u.UserName == username);
         }
 
-        public async Task CreatePostAsync(int userId, PostCreateDto dto)
+        public async Task<PostDto> CreatePostAsync(int userId, PostCreateDto dto)
         {
             var user = await _userManager.Users.Include(u=>u.Posts).FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
                 throw new Exception("User not found");
 
-            await _postsService.CreateAsync(userId,dto);
+            var post = await _postsService.CreateAsync(userId,dto);
+            return _mapper.Map<PostDto>(post);
+        }
 
+        public async Task<IEnumerable<PostDto>> GetAllPostsAsync(int userId)
+        {
+            var user = await _userManager.Users.Include(u => u.Posts).FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+                throw new Exception("User not found");
         }
     }
 }

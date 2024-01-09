@@ -29,12 +29,13 @@ namespace Twitter.Business.Concreate
             throw new NotImplementedException();
         }
 
-        public async Task CreateAsync(int userId, PostCreateDto dto)
+        public async Task<PostDto> CreateAsync(int userId, PostCreateDto dto)
         {
             var post = Mapper.Map<Post>(dto);
             post.OwnerId = userId;
             await genericRepository.CreateAsync(post);
             await genericRepository.SaveChangesAsync();
+            return Mapper.Map<PostDto>(post);
         }
 
         public Task DeleteAsync(int id)

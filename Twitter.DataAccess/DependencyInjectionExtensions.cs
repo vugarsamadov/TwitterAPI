@@ -37,6 +37,7 @@ namespace Twitter.DataAccess
                 options.Password.RequiredUniqueChars = 0;
             });
 
+
             return services;
 
         }

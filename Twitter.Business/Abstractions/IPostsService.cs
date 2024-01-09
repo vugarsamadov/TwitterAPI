@@ -13,9 +13,10 @@ namespace Twitter.Business.Abstractions
     public interface IPostsService
     {
         public Task<PostDto> GetByIdAsync(int Id);
+
         public Task<IEnumerable<PostDto>> GetAllAsync();
         public Task DeleteAsync(int id);
-        public Task CreateAsync(int userId,PostCreateDto dto);
+        public Task<PostDto> CreateAsync(int userId,PostCreateDto dto);
 
 
         public Task<IEnumerable<MediaDto>> GetMediasAsync(int postId);

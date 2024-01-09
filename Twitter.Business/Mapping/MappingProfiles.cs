@@ -15,10 +15,12 @@ namespace Twitter.Business.Mapping
         public MappingProfiles()
         {
             CreateMap<UserRegisterDto, User>();
+            CreateMap<UserUpdateDto, User>();
             CreateMap<User, UserDto>();
-            CreateMap<IEnumerable<User>, IEnumerable<UserDto>>();
+            
 
             CreateMap<PostCreateDto, Post>();
+            CreateMap<Post, PostDto>();
 
         }
     }

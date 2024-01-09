@@ -19,6 +19,7 @@ namespace Twitter.Business
             services.AddAutoMapper(options=>options.AddMaps(typeof(DependencyInjectionExtensions).Assembly));
 
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IPostsService,PostService>();
             
 
             return services;

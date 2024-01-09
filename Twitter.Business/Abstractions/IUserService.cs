@@ -11,12 +11,12 @@ namespace Twitter.Business.Abstractions
     public interface IUserService
     {
 
-        public Task CreatePostAsync(int userId,PostCreateDto dto);
-
+        public Task<PostDto> CreatePostAsync(int userId,PostCreateDto dto);
+        public Task<IEnumerable<PostDto>> GetAllPostsAsync(int userId);
 
         public Task<IEnumerable<UserDto>> GetAllAsync();
         public Task<UserDto> GetByIdAsync(int Id);
-        public Task<UserDto> UpdateAsync(UserUpdateDto dto);
+        public Task<UserDto> UpdateAsync(int id,UserUpdateDto dto);
         public Task DeleteAsync(int id);
 
         public Task<bool> UserEmailExists(string email);

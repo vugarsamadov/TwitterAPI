@@ -8,5 +8,6 @@ namespace Twitter.Business.Dtos.Post
 {
     public class PostUpdateDto
     {
+        public string Body { get; set; }
     }
 }
