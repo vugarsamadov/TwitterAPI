@@ -78,7 +78,7 @@ namespace Twitter.Api.Controllers
         [HttpGet("{userId:int}/posts")]
         public async Task<IActionResult> GetPosts(int userId)
         {
-            return await _userService.GetAllPosts();
+            return Ok(await _userService.GetAllPostsAsync(userId));
         }
 
 

@@ -1,12 +1,16 @@
-﻿using AutoMapper;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Twitter.Business.Abstractions;
 using Twitter.Business.Dtos.Post;
 using Twitter.Business.Dtos.User;
 using Twitter.Core.Entities;
 
-namespace Twitter.Business.Concreate
+namespace Twitter.Business.Concreate    
 {
     public class UserService : IUserService
     {
@@ -14,7 +18,7 @@ namespace Twitter.Business.Concreate
         private UserManager<User> _userManager { get; }
         private IMapper _mapper { get; }
 
-        public UserService(IPostsService postsService,UserManager<User> userManager,IMapper mapper )
+        public UserService(IPostsService postsService, UserManager<User> userManager, IMapper mapper)
         {
             _postsService = postsService;
             _userManager = userManager;
@@ -26,9 +30,24 @@ namespace Twitter.Business.Concreate
         {
             var user = _mapper.Map<User>(dto);
 
-            var result = await _userManager.CreateAsync(user,dto.Password);
+            var result = await _userManager.CreateAsync(user, dto.Password);
+            
+            if (!result.Succeeded) return "Error";
+            
+            List<Claim> Claims = new();
+            Claims.Add(new Claim(ClaimTypes.NameIdentifier, user.UserName));
+            Claims.Add(new Claim(ClaimTypes.GivenName, user.Name));
 
-            return user.Id.ToString();
+            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("asfasdfasdfasdfsadfsadfasdfasf"));
+            SigningCredentials signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
+
+            JwtSecurityToken jwt = new JwtSecurityToken(
+                "", "", Claims, DateTime.Now, DateTime.Now.AddHours(1), signingCredentials);
+
+            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+            var token = handler.WriteToken(jwt);
+
+            return token;
         }
 
         public async Task<string> Login(UserLoginDto dto)
@@ -37,9 +56,24 @@ namespace Twitter.Business.Concreate
             if (user == null)
                 throw new Exception("User not found");
             var result = await _userManager.CheckPasswordAsync(user, dto.Password);
-            if (result)
-                return user.Id.ToString();
-            return null;
+
+            if (!result)
+                return null;
+
+            List<Claim> Claims = new();
+            Claims.Add(new Claim(ClaimTypes.NameIdentifier, user.UserName));
+            Claims.Add(new Claim(ClaimTypes.GivenName, user.Name));
+
+            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("asfasdfasdfasdfsadfsadfasdfasf"));
+            SigningCredentials signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
+
+            JwtSecurityToken jwt = new JwtSecurityToken(
+                "", "", Claims, DateTime.Now, DateTime.Now.AddHours(1), signingCredentials);
+
+            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+            var token = handler.WriteToken(jwt);
+            
+            return token;
         }
 
         public async Task<IEnumerable<UserDto>> GetAllAsync()
@@ -56,7 +90,7 @@ namespace Twitter.Business.Concreate
             return _mapper.Map<UserDto>(user);
         }
 
-        public async Task<UserDto> UpdateAsync(int id,UserUpdateDto dto)
+        public async Task<UserDto> UpdateAsync(int id, UserUpdateDto dto)
         {
 
 
@@ -68,7 +102,7 @@ namespace Twitter.Business.Concreate
             return _mapper.Map<UserDto>(user);
         }
 
-        
+
         public async Task DeleteAsync(int id)
         {
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id);
@@ -89,11 +123,11 @@ namespace Twitter.Business.Concreate
 
         public async Task<PostDto> CreatePostAsync(int userId, PostCreateDto dto)
         {
-            var user = await _userManager.Users.Include(u=>u.Posts).FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _userManager.Users.Include(u => u.Posts).FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
                 throw new Exception("User not found");
 
-            var post = await _postsService.CreateAsync(userId,dto);
+            var post = await _postsService.CreateAsync(userId, dto);
             return _mapper.Map<PostDto>(post);
         }
 
@@ -102,6 +136,8 @@ namespace Twitter.Business.Concreate
             var user = await _userManager.Users.Include(u => u.Posts).FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
                 throw new Exception("User not found");
+            throw new NotImplementedException();
+
         }
     }
 }

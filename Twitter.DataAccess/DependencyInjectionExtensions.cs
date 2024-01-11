@@ -19,7 +19,8 @@ namespace Twitter.DataAccess
 
         public static IServiceCollection AddDataAccess(this IServiceCollection services,IConfiguration config)
         {
-            services.AddDbContext<ApplicationDbContext>(options=>options.UseSqlServer(config.GetConnectionString("MSSQL")))
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(config.GetConnectionString("MSSQL"), opt =>
+opt.EnableRetryOnFailure()))
                 .AddIdentityCore<User>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
